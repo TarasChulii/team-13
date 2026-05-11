@@ -1,5 +1,5 @@
 // ╔══════════════════════════════════════════════════════════════════╗
-// ║                     ER DIAGRAM — DBML                           ║
+// ║                     ER DIAGRAM — DBML                                                ║
 // ╚══════════════════════════════════════════════════════════════════╝
 //
 // 📌 ЩО ПОТРІБНО ЗРОБИТИ
@@ -11,9 +11,10 @@
 //
 //  2. Кожен учасник команди підписує таблиці, які він створював:
 //
-//     [Ім'я] — назви таблиць через кому
-//     [Ім'я] — назви таблиць через кому
-//     [Ім'я] — назви таблиць через кому
+//     [Dmytro Kotov] — Members, Member_Status, Reviews
+//     [Taras Chulii] — Reservations, Reservation_Status, Borrowings, Borrowing_Status
+//     [Anatolii Kucher] — Book_Copies, Book_Status, Book_Location, Publishers
+//     [Vladyslav Mahal] — Books, Authors, Books_Authors, Categories
 //
 //  4. У цьому файлі додайте DBML-код вашої схеми.
 //     Якщо використовуєте dbdiagram.io — там є кнопка експорту в DBML.
@@ -36,3 +37,116 @@
 
 
 // Вставте ваш DBML-код нижче 👇
+
+Table Members {
+  member_id int [pk, increment]
+  first_name varchar(50) [not null]
+  last_name varchar(50) [not null]
+  phone varchar(20) [not null, unique]
+  address varchar(128) [not null]
+  email varchar(100) [unique]
+  created_date datetime [default: `CURRENT_TIMESTAMP`]
+  member_status_id int [not null,ref: > Member_Status.member_status_id]
+}
+
+Table Member_Status {
+  member_status_id int [pk, increment]
+  status varchar(20) [not null]
+}
+
+Table Reviews {
+  review_id int [pk, increment]
+  member_id int [not null,ref: > Members.member_id]
+  book_id int [not null,ref: > Books.book_id]
+  rating smallint [not null, note: "1–5"]
+  review_text text
+  created_date datetime [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (member_id, book_id) [unique]
+  }
+}
+
+Table Reservations {
+  reservation_id int [pk, increment]
+  member_id int [not null,ref: > Members.member_id]
+  book_id int [not null,ref: > Books.book_id]
+  reservation_date date [not null]
+  reservation_status_id int [not null, ref: > Reservation_Status.reservation_status_id]
+}
+
+Table Reservation_Status {
+  reservation_status_id int [pk, increment]
+  name varchar(20) [not null]
+}
+
+Table Books {
+  book_id int [pk, increment]
+  title varchar(150) [not null]
+  isbn varchar(17) [unique, not null]
+  category_id int [not null, ref: > Categories.category_id]
+}
+
+Table Categories {
+  category_id int [pk, increment]
+  name varchar(30) [not null]
+}
+
+Table Authors {
+  author_id int [pk, increment]
+  first_name varchar(50) [not null]
+  last_name varchar(50) [not null]
+  biography text
+}
+
+Table Books_Authors {
+  author_id int [not null, ref: > Authors.author_id]
+  book_id int [not null, ref: > Books.book_id]
+
+  indexes {
+    (author_id, book_id) [pk]
+  }
+ }
+
+Table Book_Status {
+  status_id int [pk, increment]
+  status_name varchar(20) [not null]
+}
+
+Table Book_Copies {
+  copy_id int [pk, increment]
+  book_id int [not null, ref: > Books.book_id]
+  status_id int [not null, ref: > Book_Status.status_id]
+  location_id int [not null, ref: > Book_Location.location_id]
+  publication_year smallint [not null, note: '4-digit year']
+  publisher_id int [not null, ref: > Publishers.publisher_id]
+
+}
+
+Table Borrowing_Status {
+  borrowing_status_id int [pk, increment]
+  name varchar(20) [not null]
+}
+
+Table Borrowings {
+  borrowing_id int [pk, increment]
+  copy_id int [not null, ref: > Book_Copies.copy_id]
+  member_id int [not null, ref: > Members.member_id]
+  borrow_date date [not null]
+  due_date date [not null]
+  return_date date
+  borrowing_status_id int [not null, ref: > Borrowing_Status.borrowing_status_id]
+}
+
+Table Book_Location {
+  location_id int [pk, increment]
+  room smallint [not null]
+  row smallint [not null]
+  cabinet smallint [not null]
+  shelf smallint [not null]
+}
+
+Table Publishers {
+  publisher_id int [pk, increment]
+  name varchar(100) [not null]
+}
